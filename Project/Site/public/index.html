@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>OpinionChain</title>
+      <meta name="description" content="Opinion Gathering Site">
+      <meta name="author" content="OpinionChain">
+      <link rel="stylesheet" href="styles.css">
+   </head>
+   <style>
+      body {
+      background: #F5F5F5;
+      margin: 0;
+      font-family: "Trebuchet MS", Helvetica, sans-serif;
+      }
+      .pageContent {
+      padding: 0 15%;
+      }
+      p {
+      text-align: justify;
+      }
+      p a {
+      color: inherit;
+      }
+      ul {
+      list-style-type: none;
+      background-color: #303030;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      }
+      li {
+      float: left;
+      }
+      li a {
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+      background-color: #303030;
+      color: white;
+      }
+      li a:hover {
+      background: #484848;
+      }
+      .navBar {
+      background-color: #303030;
+      margin: 0px;
+      padding: 0px;
+      }
+      .logo {
+      float: right;
+      font-weight: bold;
+      }
+      h1 {
+      text-align: center;
+      padding-top: 50px;
+      }
+      .graph div {
+      font: 10px sans-serif;
+      background-color: steelblue;
+      text-align: right;
+      padding: 3px;
+      margin: 1px;
+      color: white;
+      }
+      .graph {
+      border-style: solid;
+      border-width: 2px;
+      border-color: darkgrey;
+      border-radius: 2px;
+      padding: 15px;
+      }
+   </style>
+   <body>
+      <div class="navBar">
+         <ul>
+         <li><a href="home">Home</a></li>
+         <li class="navBarElement"><a href="vote">Vote</a></li>
+         <li class="navBarElement"><a href="results">Results</a></li>
+         <li class="" class="navBarElement"><a href="connect">Connect</a></li>
+         <li class="navBarElement"><a href="Admin">Admin</a></li>
+         <li class="logo"><a href="home">OpinionChain.co.uk</a></li>
+      </div>
+      <div class="pageContent">
+         <h1>Welcome To OpinionChain.co.uk</h1>
+         <p>OpinionChain aims to provide an environment for gathering public opinion confidentially, whilst insuring the integrity of the data gathered through the use of BlockChain technology. The results are then delivered in an easy to interpret graphical
+            format that is non-biased and easily verifiable by providing access to all source data
+         </p>
+         <h2>Top Open Opinion Polls</h2>
+         <div class="poll1">
+            <h3>Poll 1 Title Example </h3>
+            <p>Poll 1 Description - This graph will show a basic data example only data example data example data example only data example data example</p>
+            <div class="graph graph1"></div>
+            <p><a href="data1">Link To Data Set</a></p>
+         </div>
+         <div class="poll2">
+            <h3>Poll 2 Title Example </h3>
+            <p>Poll 2 Description - This graph will show a basic data example only data example data example data example only data example data example</p>
+            <div id="my_dataviz" class=""></div>
+            <p><a href="data2">Link To Data Set</a></p>
+         </div>
+      </div>
+      <script src="http://d3js.org/d3.v4.min.js"></script>
+      <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+      <script src="script.js"></script>
+      <script type="text/javascript">
+         var data = [10, 20, 30, 40];
+         
+         
+         var data = [30, 86, 168, 281, 303, 365];
+         
+         d3.select(".graph1")
+             .selectAll("div")
+             .data(data)
+             .enter()
+             .append("div")
+             .style("width", function(d) {
+                 return d + "px";
+             })
+             .text(function(d) {
+                 return d;
+             });
+         
+         
+             // Size ?
+             var width = 460
+             var height = 400
+         
+             // The svg
+             var svg = d3.select("#my_dataviz")
+               .append("svg")
+               .attr("width", width)
+               .attr("height", height)
+         
+             // Map and projection
+             var projection = d3.geoMercator()
+                 .center([4, 47])                // GPS of location to zoom on
+                 .scale(1020)                       // This is like the zoom
+                 .translate([ width/2, height/2 ])
+         
+             // Create data for circles:
+             var markers = [
+               {long: 9.083, lat: 42.149, name: "Corsica"}, // corsica
+               {long: 7.26, lat: 43.71, name: "Nice"}, // nice
+               {long: 2.349, lat: 48.864, name: "Paris"}, // Paris
+               {long: -1.397, lat: 43.664, name: "Hossegor"}, // Hossegor
+               {long: 3.075, lat: 50.640, name: "Lille"}, // Lille
+               {long: -3.83, lat: 58, name: "Morlaix"}, // Morlaix
+             ];
+         
+             // Load external data and boot
+             d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson", function(data){
+         
+                 // Filter data
+                 data.features = data.features.filter( function(d){return d.properties.name=="France"} )
+         
+                 // Draw the map
+                 svg.append("g")
+                     .selectAll("path")
+                     .data(data.features)
+                     .enter()
+                     .append("path")
+                       .attr("fill", "#b8b8b8")
+                       .attr("d", d3.geoPath()
+                           .projection(projection)
+                       )
+                     .style("stroke", "black")
+                     .style("opacity", .3)
+         
+                 // create a tooltip
+                 var Tooltip = d3.select("#my_dataviz")
+                   .append("div")
+                   .attr("class", "tooltip")
+                   .style("opacity", 1)
+                   .style("background-color", "white")
+                   .style("border", "solid")
+                   .style("border-width", "2px")
+                   .style("border-radius", "5px")
+                   .style("padding", "5px")
+         
+                 // Three function that change the tooltip when user hover / move / leave a cell
+                 var mouseover = function(d) {
+                   Tooltip.style("opacity", 1)
+                 }
+                 var mousemove = function(d) {
+                   Tooltip
+                     .html(d.name + "<br>" + "long: " + d.long + "<br>" + "lat: " + d.lat)
+                     .style("left", (d3.mouse(this)[0]+10) + "px")
+                     .style("top", (d3.mouse(this)[1]) + "px")
+                 }
+                 var mouseleave = function(d) {
+                   Tooltip.style("opacity", 0)
+                 }
+         
+                 // Add circles:
+                 svg
+                   .selectAll("myCircles")
+                   .data(markers)
+                   .enter()
+                   .append("circle")
+                     .attr("cx", function(d){ return projection([d.long, d.lat])[0] })
+                     .attr("cy", function(d){ return projection([d.long, d.lat])[1] })
+                     .attr("r", 14)
+                     .attr("class", "circle")
+                     .style("fill", "69b3a2")
+                     .attr("stroke", "#69b3a2")
+                     .attr("stroke-width", 3)
+                     .attr("fill-opacity", .4)
+                   .on("mouseover", mouseover)
+                   .on("mousemove", mousemove)
+                   .on("mouseleave", mouseleave)
+         
+             })
+      </script>
+   </body>
+</html>

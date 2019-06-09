@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>OpinionChain - Vote</title>
+      <meta name="description" content="Connect Page">
+      <meta name="author" content="OpinionChain">
+      <link rel="stylesheet" href="styles.css">
+   </head>
+   <style>
+      body {
+      background: #F5F5F5;
+      margin: 0;
+      font-family: "Trebuchet MS", Helvetica, sans-serif;
+      }
+      .pageContent {
+      padding: 0 15%;
+      }
+      p {
+      text-align: justify;
+      }
+      p a {
+      color: inherit;
+      }
+      ul {
+      list-style-type: none;
+      background-color: #303030;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      }
+      li {
+      float: left;
+      }
+      li a {
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+      background-color: #303030;
+      color: white;
+      }
+      li a:hover {
+      background: #484848;
+      }
+      .navBar {
+      background-color: #303030;
+      margin: 0px;
+      padding: 0px;
+      }
+      .logo {
+      float: right;
+      font-weight: bold;
+      }
+      h1 {
+      text-align: center;
+      padding-top: 50px;
+      }
+      button {
+      background-color: #303030;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 1em;
+      }
+   </style>
+   <body>
+      <div class="navBar">
+         <ul>
+         <li class="navBarElement"><a href="index.html">Home</a></li>
+         <li class="navBarElement"><a href="Vote">Vote</a></li>
+         <li class="navBarElement"><a href="Results">Results</a></li>
+         <li class="navBarElement"><a href="Connect">Connect</a></li>
+         <li class="navBarElement"><a href="Admin">Admin</a></li>
+         <li class="logo"><a href="Home">OpinionChain.co.uk</a></li>
+      </div>
+      <div class="pageContent">
+         <h1>Connect Page</h1>
+         <form>
+            <p>Node IP</p>
+            <input type="text" id="IPbox"><br>
+            <p>Node Port</p>
+            <input type="text" id="portbox"><br>
+            <p>Node Name</p>
+            <input type="text" id="namebox"><br><br><br>
+         </form>
+         <button id="submit" onClick="submitRegistration(this.form)">Register Node</button><br><br><br><br>
+         <button onclick="toggle_visibility()">Registration Instructions & GitHub Link</button>
+         <div id="hidden" style="display:none;">
+            <h2>Instuctions To Vote:</h2>
+            <ol>
+               <li>EDownload and setup your node following the instructions provided in the GitHub Repository:</li>
+               <a href="https://github.com/Danjt123456/Dissertation" target="_blank">Link to GitHub Repository</a>
+               <li>Enter the aIP address, port number and a name for your new node</li>
+               <li>The System will now add your address to the active nodes and vice versa.</li>
+               <li>The latest chain will automatically load onto your node after registration</li>
+            </ol>
+         </div>
+      </div>
+      <script type="text/javascript">
+         function toggle_visibility() {
+             if (document.getElementById("hidden").style.display === "none") {
+                 document.getElementById("hidden").style.display = "block"
+             } else {
+                 document.getElementById("hidden").style.display = "none";
+             }
+         }    
+             
+         function submitRegistration(form) {
+         
+         console.log('try reg');
+         
+         var ip = document.getElementById("IPbox").value
+         var port = document.getElementById("portbox").value
+         var name = document.getElementById("namebox").value
+         
+         
+         // Basic user input validation
+         if (ip.length <1) {
+         window.alert('Please provide the IP');
+         return
+         }
+         // check ip format against Regular Expression
+         else if (! /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip)) {
+         window.alert('Invalid IP format, please enter only valid IPs')
+         return
+         }
+         else if (port.length < 1 || Number.isInteger(port)) {
+         window.alert('Invalid port or not entered')
+         return
+         }
+         else if (name.length < 1 ) {
+         window.alert('Invalid name or not entered')
+         return
+         }
+         
+         
+         
+         // send request to cast vote on each registered node
+         var xmlhttp2 = new XMLHttpRequest();
+         var url = "http://192.168.0.10:3000/registernode?ip=" + ip + "&port=" + port + "&name=" + name;
+         
+         xmlhttp2.onreadystatechange = function() {
+         if (this.readyState == 4) {
+         console.log('reg sent');
+         if (this.status == 200) {
+         window.alert('Node Registered Successfully');
+         }
+         else {
+         window.alert('Registration Failed');
+         }
+         
+         }
+         };
+         
+         
+         xmlhttp2.open("POST", url, false);
+         xmlhttp2.send();	
+         };	
+         
+         
+         
+         
+         
+      </script>
+   </body>
+</html>

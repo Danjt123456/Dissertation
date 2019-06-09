@@ -1,0 +1,517 @@
+<!doctype html>
+
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>OpinionChain</title>
+        <meta name="description" content="Opinion Gathering Site">
+        <meta name="author" content="OpinionChain">
+
+        <link rel="stylesheet" href="styles.css">
+    </head>
+
+    <style>
+        body {
+            background: #F5F5F5;
+            margin: 0;
+            font-family: "Trebuchet MS", Helvetica, sans-serif;
+        }
+
+        .pageContent {
+            padding: 0 15%;
+        }
+
+        p {
+            text-align: justify;
+        }
+
+        p a {
+            color: inherit;
+        }
+
+
+        ul {
+            list-style-type: none;
+            background-color: #303030;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
+
+
+        li {
+            float: left;
+        }
+
+        li a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            background-color: #303030;
+            color: white;
+        }
+
+        li a:hover {
+            background: #484848;
+        }
+
+        .navBar {
+            background-color: #303030;
+            margin: 0px;
+            padding: 0px;
+        }
+
+
+        .logo {
+            float: right;
+            font-weight: bold;
+        }
+
+        h1 {
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        .graph div {
+            font: 10px sans-serif;
+            background-color: steelblue;
+            text-align: right;
+            padding: 3px;
+            margin: 1px;
+            color: white;
+        }
+
+        .graph {
+            border-style: solid;
+            border-width: 2px;
+            border-color: darkgrey;
+            border-radius: 2px;
+            padding: 15px;
+        }
+
+
+    </style>
+
+    <body>
+
+        <div class="navBar">
+
+
+            <ul>
+                <li><a href="home">Home</a></li>
+                <li class="navBarElement"><a href="vote">Vote</a></li>
+                <li class="navBarElement"><a href="results">Results</a></li>
+                <li class="" class="navBarElement"><a href="connect">Connect</a></li>
+                <li class="navBarElement"><a href="Admin">Admin</a></li>
+                <li class="logo"><a href="home">OpinionChain.co.uk</a></li>
+        </div>
+
+        <div class="pageContent">
+
+         <h1>Admin Page</h1>
+         <p>This page is to be used for demonstration purposes to replicate events such as a user maliciously altering the votes on their node. These scenarios will allow testing of how the system responds to these actions and if it can overcome them.</p>   
+           
+	    <h2>Select Node to Use</h2>
+	    <select id="nodeList" onchange= updateNodeSelection(this)></select>
+	    <h3>Curren node in use: </h3>
+		<p id="showNode"></p>
+		<br>
+		
+		<h3>Download Blockchain From Node</h3>
+		<button onClick="showChain()">Show Chain</button><br>
+		
+		<h3>Download Un-Mined Blocks From Node</h3>
+		<button onClick="showToBeMined()">Show Un-Mined</button><br>
+		
+		<h3>Set Up Dummy Chain</h3>
+		<button onClick="dummyChain()">Set up Chain</button><br>
+		
+		<h3>Verify Chain</h3>
+		<button onClick="verifyChain()">Verify Nodes Chain</button><br>
+		
+		<h3>Manually Break Chain</h3>
+		<button onClick="breakChain()">Manually Break Chain</button><br>
+		
+		<h3>Resolve Chain</h3>
+		<button onClick="resolveChain()">Resolve Nodes Chain</button><br>
+				
+		<h3>Reset Chain</h3>
+		<button onClick="resetChain()">Reset</button><br>
+		
+		<h3>Rest Node List</h3>
+		<button onClick="resetNodeList()">Reset</button><br><br><br>
+
+		
+		
+		
+		<h2>Action All Nodes</h2>
+		
+		<h3>Mine All Transactions</h3>
+		<button onClick="mine()">Mine</button>
+		
+		<h3>Resolve All Nodes</h3>
+		<button onClick="resolveAll()">Resolve All</button>
+		
+		
+		<h2>Output</h2>
+		<pre id="display" style="border-style:solid; word-wrap: break-word;"></pre>
+		
+		
+
+
+
+
+	<script type="text/javascript">  
+
+	//load list of registered nodes
+		var xmlhttp2 = new XMLHttpRequest();
+		var url = "http://192.168.0.10:3000/getnodelist";
+		var nodeList
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+        		nodeList = JSON.parse(this.responseText);
+        		fillDropDown(nodeList);
+    			}
+		};
+		xmlhttp2.open("GET", url, true);
+		xmlhttp2.send();
+		
+		
+	
+	function updateNodeSelection(list) {
+		display = document.getElementById("showNode");
+		value = 'Node: ' + list.options[list.selectedIndex].text + '<br>Via: ' + list.value;
+		
+		display.innerHTML = value;
+
+
+	}
+
+
+	function selectedNode() {
+		var list = document.getElementById("nodeList");
+		var address = list.value;
+		return address
+	}
+	
+	function displayThis(json) {
+		var dest = document.getElementById("display");
+		dest.innerHTML = JSON.stringify(json, null ,2);
+		return
+	}
+	
+
+
+	function showChain() {
+	var curNode = selectedNode();
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	console.log('curNode: ' + curNode);
+	
+	var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/chain?address=" + curNode;
+		console.log(url);
+		var chain
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+        		chain = JSON.parse(this.responseText);
+        		console.log(chain);
+        		
+        		displayThis(chain);
+    			}
+		};
+		xmlhttp2.open("GET", url, true);
+		xmlhttp2.send();	
+	};
+		
+		
+	function showToBeMined() {
+	var curNode = selectedNode();
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	console.log('curNode: ' + curNode);
+	
+	var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/toBeMined?address=" + curNode;
+		console.log(url);
+		var chain
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+        		chain = JSON.parse(this.responseText);
+        		console.log(chain);
+        		
+        		displayThis(chain);
+    			}
+		};
+		xmlhttp2.open("GET", url, true);
+		xmlhttp2.send();	
+	};
+		
+	
+		
+	function mine() {
+		var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/mine";
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+        		displayThis({'response': 'Mine Command Sent To Registered Nodes'});
+    			}
+		};
+		xmlhttp2.open("GET", url, true);
+		xmlhttp2.send();	
+
+
+	};
+	
+	
+	
+	function dummyChain() {
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	var curNode = selectedNode();
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	console.log('curNode: ' + curNode);
+	
+	var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/setupchain?address=" + curNode;
+		console.log(url);
+		var chain
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+        		displayThis({'response': 'Set Up Command Sent To ' + curNode});
+    			}
+		};
+		xmlhttp2.open("POST", url, true);
+		xmlhttp2.send();	
+	};
+
+	
+function verifyChain() {
+	var curNode = selectedNode();
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	console.log('curNode: ' + curNode);
+	
+	var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/verify?address=" + curNode;
+		console.log(url);
+		var chain
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+        		response = JSON.parse(this.responseText);
+        		console.log(response);
+        		
+        		displayThis(response);
+    			}
+		};
+		xmlhttp2.open("POST", url, true);
+		xmlhttp2.send();	
+	};
+	
+
+function resolveChain() {
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	var curNode = selectedNode();
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	console.log('curNode: ' + curNode);
+	
+	var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/resolve?address=" + curNode;
+		console.log(url);
+		var chain
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+        		response = JSON.parse(this.responseText);
+        		console.log(response);
+        		
+        		displayThis(response);
+    			}
+		};
+		xmlhttp2.open("POST", url, true);
+		xmlhttp2.send();	
+	};
+	
+	function resolveAll() {
+		var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/resolveAll";
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+        		displayThis({'response': 'Resolve Command Sent To Registered Nodes'});
+    			}
+		};
+		xmlhttp2.open("POST", url, true);
+		xmlhttp2.send();	
+
+
+	};
+	
+function breakChain() {
+	var curNode = selectedNode();
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	console.log('curNode: ' + curNode);
+	
+	var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/breakChain?address=" + curNode;
+		console.log(url);
+		var chain
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+        		response = JSON.parse(this.responseText);
+        		
+        		displayThis(response);
+    			}
+		};
+		xmlhttp2.open("POST", url, true);
+		xmlhttp2.send();	
+	};
+	
+	
+function resetNodeList() {
+	var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/clearnodelist";
+
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+        		//~ response = JSON.parse(this.responseText);
+        		
+        		displayThis(this.responseText);
+    			}
+		};
+		xmlhttp2.open("POST", url, true);
+		xmlhttp2.send();	
+	};
+
+
+function resetChain() {
+	var curNode = selectedNode();
+	if (curNode == 'ALL') {
+		window.alert('Node not selected')
+		return
+	}
+	
+	console.log('curNode: ' + curNode);
+	
+	var xmlhttp2 = new XMLHttpRequest();
+		
+		var url = "http://192.168.0.10:3000/resetChain?address=" + curNode;
+		console.log(url);
+
+
+		xmlhttp2.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+  
+        		console.log(this.responseText);
+        		displayThis(this.responseText);
+    			}
+		};
+		xmlhttp2.open("POST", url, true);
+		xmlhttp2.send();	
+	};
+
+		
+
+
+
+
+
+	
+	function fillDropDown(data) {
+		var nodeList = document.getElementById("nodeList");
+		
+		var option = document.createElement("OPTION");
+		option.innerHTML = 'Select Node';
+		option.value     = 'ALL';
+		nodeList.options.add(option);
+			
+		for (var i = 0; i < data.length; i++) {
+			var option = document.createElement("OPTION");
+			option.innerHTML = data[i].nameVal;
+			option.value     = data[i].ip;
+			nodeList.options.add(option);
+			}
+
+			
+		nodeList.selectedIndex="0";
+		console.log("Loaded List of Nodes");
+	};
+	
+
+     
+	
+
+
+	
+
+
+
+
+    
+ 
+</script>  
+
+	
+	
+
+
+
+
+
+        </div>
+
+    </body>
+
+</html>

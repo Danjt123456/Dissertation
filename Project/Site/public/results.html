@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>OpinionChain</title>
+      <meta name="description" content="Opinion Gathering Site">
+      <meta name="author" content="OpinionChain">
+      <link rel="stylesheet" href="styles.css">
+   </head>
+   <style>
+      body {
+      background: #F5F5F5;
+      margin: 0;
+      font-family: "Trebuchet MS", Helvetica, sans-serif;
+      }
+      .pageContent {
+      padding: 0 15%;
+      }
+      .svg {
+      padding: 0 15%;
+      }
+      p {
+      text-align: justify;
+      }
+      p a {
+      color: inherit;
+      }
+      ul.nav {
+      list-style-type: none;
+      background-color: #303030;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      }
+      li.navBarElement:not(.logo) {
+      float: left;
+      }
+      li.navBarElement a {
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+      background-color: #303030;
+      color: white;
+      }
+      li.navBarElement a:hover {
+      background: #484848;
+      }
+      .navBar {
+      background-color: #303030;
+      margin: 0px;
+      padding: 0px;
+      }
+      .logo {
+      float: right;
+      font-weight: bold;
+      }
+      h1 {
+      text-align: center;
+      padding-top: 50px;
+      }
+      .bar{
+      fill: steelblue;
+      }
+      .bar:hover{
+      fill: brown;
+      }
+      .axis {
+      font: 10px sans-serif;
+      }
+      .axis path,
+      .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+      }
+   </style>
+   <body>
+      <div class="navBar">
+         <ul class="nav">
+            <li class="navBarElement"><a href="home">Home</a></li>
+            <li class="navBarElement"><a href="vote">Vote</a></li>
+            <li class="navBarElement"><a href="results">Results</a></li>
+            <li class="navBarElement"><a href="connect">Connect</a></li>
+            <li class="navBarElement"><a href="Admin">Admin</a></li>
+            <li class="logo navBarElement"><a href="home">OpinionChain.co.uk</a></li>
+         </ul>
+      </div>
+      <div class="pageContent">
+         <h1>Welcome To OpinionChain.co.uk</h1>
+         <p>OpinionChain aims to provide an environment for gathering public opinion confidentially, whilst insuring the integrity of the data gathered through the use of BlockChain technology. The results are then delivered in an easy to interpret graphical
+            format that is non-biased and easily verifiable by providing access to all source data
+         </p>
+         <h2>Select Node To Provide Data</h2>
+         <select id="nodeList" onchange= updateNodeSelection(this)></select>
+         <h3>Curren node in use: </h3>
+         <p id="showNode"></p>
+         <h2>Top Open Opinion Polls</h2>
+         <div class="poll1">
+            <h3>Is the Sky Blue? </h3>
+            <p>This poll was collected from users between 01/01/19 and 01/03/19
+               The questtion asked was "Is the Sky Blue?"
+               The options were:	
+            <ul>
+               <li>A: Yes</li>
+               <li>B: No</li>
+               <li>C: Unsure</li>
+            </ul>
+            </p>
+            <svg id="chart"></svg>
+            <a href="#" onclick='downloadCSV({ filename: "rawData.csv" });'>Link To Data Set</a>
+         </div>
+         <script src="http://d3js.org/d3.v3.min.js"></script>
+         <script type="text/javascript">  
+            var xmlhttp2 = new XMLHttpRequest();
+            var url = "http://192.168.0.10:3000/getnodelist";
+            var nodeList
+            
+            xmlhttp2.onreadystatechange = function() {
+              		if (this.readyState == 4 && this.status == 200) {
+                  		nodeList = JSON.parse(this.responseText);
+                  		fillDropDown(nodeList);
+              			}
+            };
+            xmlhttp2.open("GET", url, true);
+            xmlhttp2.send();
+            
+            
+            function hideChart(bool) {
+            svg = document.getElementById("chart");
+            if (bool == true) {
+            	svg.style.display = "none";
+            }
+            else {
+            	svg.style.display = "block";
+            }
+            }
+            
+            
+            function updateNodeSelection(list) {
+            display = document.getElementById("showNode");
+            value = 'Node: ' + list.options[list.selectedIndex].text + '<br>Via: ' + list.value;
+            
+            console.log(value);
+            
+            display.innerHTML = value;
+            if (list.value != 'ALL') {
+            	loadData(list.value)
+            	hideChart(false);
+            }
+            else {
+            	hideChart(true);
+            }
+            }
+            
+            function loadData(loadURL) {
+            
+            var xmlhttp2 = new XMLHttpRequest();
+            var url = "http://192.168.0.10:3000/getData?node=" + loadURL;
+            	console.log('url  ' + url);
+            var data = [];
+            
+            xmlhttp2.onreadystatechange = function() {
+              		if (this.readyState == 4) {
+            		if (this.responseText != 'corrupt') {
+            			data = JSON.parse(this.responseText);
+            			drawGraph(data)
+            			if (data.length < 1) {
+            				hideChart(true);
+            				window.alert('This Node Has No Data To Present');
+            			}
+            
+            		}
+            		else {
+            			hideChart(true);
+            			window.alert('Corrupt Blockchain, Data Not Valid- Select other node')
+            		}
+            	}
+              			
+            };
+            xmlhttp2.open("GET", url, true);
+            xmlhttp2.send();	
+            
+            };
+            
+            
+            
+            function fillDropDown(data) {
+            var nodeList = document.getElementById("nodeList");
+            
+            var option = document.createElement("OPTION");
+            option.innerHTML = 'Select Node or All Nodes';
+            option.value     = 'ALL';
+            nodeList.options.add(option);
+            	
+            for (var i = 0; i < data.length; i++) {
+            	var option = document.createElement("OPTION");
+            	option.innerHTML = data[i].nameVal;
+            	option.value     = data[i].ip;
+            	nodeList.options.add(option);
+            	}
+            
+            	
+            nodeList.selectedIndex="0";
+            console.log("Loaded List of Nodes");
+            }
+            
+            function drawGraph(data) {
+            console.log('trying');
+            
+            
+            // set the dimensions of the canvas
+            var margin = {top: 20, right: 20, bottom: 70, left: 40},
+            width = 600 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+            
+            
+            // set the ranges
+            var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+            
+            var y = d3.scale.linear().range([height, 0]);
+            
+            // define the axis
+            var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom")
+            
+            
+            var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(10);
+            
+            
+            // add the SVG element
+            var svg = d3.select("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", 
+            	  "translate(" + margin.left + "," + margin.top + ")");
+            
+            
+            // load the graph data
+            data.forEach(function(d) {
+            	d.option = d.option;
+            	d.total = +d.total;
+            });
+            
+             // scale the range of the data
+             x.domain(data.map(function(d) { return d.option; }));
+             y.domain([0, d3.max(data, function(d) { return d.total; })]);
+            
+             // add axis
+             svg.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + height + ")")
+              .call(xAxis)
+            .selectAll("text")
+              .style("text-anchor", "end")
+              .attr("dx", "-.8em")
+              .attr("dy", "-.55em")
+              .attr("transform", "rotate(-90)" );
+            
+             svg.append("g")
+              .attr("class", "y axis")
+              .call(yAxis)
+            .append("text")
+              .attr("transform", "rotate(-90)")
+              .attr("y", 5)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text("totaluency");
+            
+            
+             // Add bar chart
+             svg.selectAll("bar")
+              .data(data)
+            .enter().append("rect")
+              .attr("class", "bar")
+              .attr("x", function(d) { return x(d.option); })
+              .attr("width", x.rangeBand())
+              .attr("y", function(d) { return y(d.total); })
+              .attr("height", function(d) { return height - y(d.total); });
+              
+            };
+                
+            
+            
+            
+            
+            
+              function convertArrayOfObjectsToCSV(args) {
+                  var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+            
+                  data = args.data || null;
+                  if (data == null || !data.length) {
+                      return null;
+                  }
+            
+                  columnDelimiter = args.columnDelimiter || ',';
+                  lineDelimiter = args.lineDelimiter || '\n';
+            
+                  keys = Object.keys(data[0]);
+            
+                  result = '';
+                  result += keys.join(columnDelimiter);
+                  result += lineDelimiter;
+            
+                  data.forEach(function(item) {
+                      ctr = 0;
+                      keys.forEach(function(key) {
+                          if (ctr > 0) result += columnDelimiter;
+            
+                          result += item[key];
+                          ctr++;
+                      });
+                      result += lineDelimiter;
+                  });
+            
+                  return result;
+              }
+            
+            
+              function downloadCSV(args) {
+                  var list = document.getElementById("nodeList");
+            var address = list.value;
+            if (address == 'ALL') {
+            	window.alert('No Node selected to download data from');
+            	return
+            }
+            
+                  var xmlhttp = new XMLHttpRequest();
+            var url = "http://192.168.0.10:3000/getData?node=" + address;
+            
+            var rawData
+            
+            xmlhttp.onreadystatechange = function() {
+            	if (this.readyState == 4 && this.status == 200) {
+            		rawData = JSON.parse(this.responseText);
+            		console.log(rawData);
+            		processData(args, rawData);
+            		}
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.send();
+            	
+            };
+            
+            function processData(args, rawData) {
+                   	console.log("run process");
+                  var data, filename, link;
+                  var csv = convertArrayOfObjectsToCSV({
+                      data: rawData
+                  });
+            
+                  if (csv == null) return;
+            
+                  filename = args.filename || 'export.csv';
+            
+                  if (!csv.match(/^data:text\/csv/i)) {
+                      csv = 'data:text/csv;charset=utf-8,' + csv;
+                  }
+                  data = encodeURI(csv);
+                  
+                  link = document.createElement('a');
+                  link.setAttribute('href', data);
+                  link.setAttribute('download', filename);
+                  link.click();
+              }
+              
+            
+              
+            
+         </script>  
+      </div>
+   </body>
+</html>

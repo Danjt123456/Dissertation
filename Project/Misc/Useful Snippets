@@ -1,0 +1,39 @@
+
+
+---- Forward port 80 to 3000 (Check wlan0 or eth0) ----
+sudo iptables -t nat -A PREROUTING -i wlan0 -p tcp --dport 80 -j REDIRECT --to-port 3000
+
+
+
+
+
+       $ sudo apt-get update
+        $ sudo apt-get install build-essential tk-dev libncurses5-dev libncursesw5-dev libreadline6-dev libdb5.3-dev libgdbm-dev libsqlite3-dev libssl-dev libbz2-dev libexpat1-dev liblzma-dev zlib1g-dev
+
+   If one of the packages cannot be found, try a newer version number (e.g. ``libdb5.4-dev`` instead of ``libdb5.3-dev``).
+
+2. Download and install Python 3.6. When downloading the source code, select the most recent release of Python 3.6, available
+   on the `official site <https://www.python.org/downloads/source/>`_. Adjust the file names accordingly.
+
+   .. code-block:: bash
+
+        $ wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz
+        $ tar xf Python-3.6.5.tar.xz
+        $ cd Python-3.6.5
+        $ ./configure
+        $ make
+        $ sudo make altinstall
+
+
+
+
+
+
+-----------------------------------------------------------------------
+
+sudo python3.6 -m m pip install flask
+
+
+
+netstat -nlp | grep :3000
+kill -9 ###
